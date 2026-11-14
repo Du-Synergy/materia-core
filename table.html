@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Таблица Дениса (Матрица Синергии)</title>
+<style>
+  body { background: #12161f; color: white; font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; text-align: center; margin: 0; }
+  
+  h1 { color: #f3f4f6; margin-bottom: 5px; letter-spacing: 2px; }
+  p { color: #9ca3af; margin-bottom: 20px; font-size: 14px; }
+
+  .nav-btn {
+    display: inline-block; margin-bottom: 20px; padding: 10px 20px;
+    background: #1e3a8a; color: white; text-decoration: none; 
+    border-radius: 4px; font-weight: bold; border: 1px solid #3b82f6;
+    transition: background 0.2s;
+  }
+  .nav-btn:hover { background: #3b82f6; }
+
+  /* Контейнер для таблицы */
+  .table-container { 
+    width: 100%; 
+    overflow: auto; /* Прокрутка */
+    border: 2px solid #334155;
+    background: #0f172a;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    /* Убрали max-height, чтобы таблица не пряталась */
+  }
+  
+  table { border-collapse: collapse; margin: 0 auto; font-family: 'Courier New', monospace; }
+  
+  th, td { border: 1px solid #374151; text-align: center; vertical-align: middle; }
+  
+  /* Заголовки столбцов */
+  th { 
+    background: #1e3a8a; color: white; font-size: 10px; 
+    font-family: 'Segoe UI', Arial, sans-serif;
+    width: 40px; height: 40px; min-width: 40px;
+    position: sticky; top: 0; z-index: 5;
+  }
+
+  /* Левая колонка */
+  th.row-head { 
+    background: #111827; color: #e5e7eb; 
+    font-size: 10px; width: 45px; min-width: 45px;
+    position: sticky; left: 0; z-index: 10;
+  }
+  
+  th.corner { 
+    position: sticky; left: 0; top: 0; z-index: 20; 
+    background: #1e293b; color: #9ca3af;
+  }
+
+  td { width: 40px; height: 40px; font-size: 12px; font-weight: bold;}
+  
+  /* Цвета уровней */
+  .s0 { background-color: #7f1d1d !important; color: #fca5a5 !important; }
+  .s1 { background-color: #b91c1c !important; color: #fecaca !important; }
+  .s2 { background-color: #c2410c !important; color: #ffedd5 !important; }
+  .s3 { background-color: #4d7c0f !important; color: #ecfccb !important; }
+  .s4 { background-color: #f8fafc !important; color: #0f172a !important; }
+
+  /* Стили для секторов */
+  .sec1 { border-bottom: 2px solid #60a5fa !important; border-right: 2px solid #60a5fa !important; }
+  .sec2 { border-bottom: 2px solid #34d399 !important; border-right: 2px solid #34d399 !important; }
+  .sec3 { border-bottom: 2px solid #f472b6 !important; border-right: 2px solid #f472b6 !important; }
+  .sec4 { border-bottom: 2px solid #fbbf24 !important; border-right: 2px solid #fbbf24 !important; }
+  .sec5 { border-bottom: 2px solid #a78bfa !important; border-right: 2px solid #a78bfa !important; }
+  .sec6 { border-bottom: 2px solid #f87171 !important; border-right: 2px solid #f87171 !important; }
+
+  .legend { display: flex; justify-content: center; gap: 15px; margin-top: 10px; font-size: 12px; color: #cbd5e1; flex-wrap: wrap;}
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .color-box { width: 14px; height: 14px; border-radius: 2px; border: 1px solid #555; }
+  .sector-box { width: 14px; height: 14px; border-radius: 2px; margin-right: 3px;}
+
+</style>
+</head>
+<body>
+
+<h1>ТАБЛИЦА ДЕНИСА (МАТРИЦА СИНЕРГИИ)</h1>
+<p>Авторская классификация: 6 секторов по 6 элементов.</p>
+
+<a href="elements.html" class="nav-btn">Перейти к Элементам и Кодексу &rarr;</a>
+
+<div class="table-container">
+  <table id="matrix"></table>
+</div>
+
+<!-- Легенда цветов -->
+<div class="legend">
+  <div class="legend-item"><div class="color-box" style="background:#b91c1c"></div> Слабая (0-1)</div>
+  <div class="legend-item"><div class="color-box" style="background:#c2410c"></div> Умеренная (2)</div>
+  <div class="legend-item"><div class="color-box" style="background:#4d7c0f"></div> Высокая (3)</div>
+  <div class="legend-item"><div class="color-box" style="background:#f8fafc"></div> Максимум (4)</div>
+</div>
+
+<!-- Легенда секторов -->
+<div class="legend">
+  <div class="legend-item"><div class="sector-box" style="border: 2px solid #60a5fa"></div> Сектор I: Стихии</div>
+  <div class="legend-item"><div class="sector-box" style="border: 2px solid #34d399"></div> Сектор II: Агрегаты</div>
+  <div class="legend-item"><div class="sector-box" style="border: 2px solid #f472b6"></div> Сектор III: Аномалии</div>
+  <div class="legend-item"><div class="sector-box" style="border: 2px solid #fbbf24"></div> Сектор IV: Пределы</div>
+  <div class="legend-item"><div class="sector-box" style="border: 2px solid #a78bfa"></div> Сектор V: Минералы</div>
+  <div class="legend-item"><div class="sector-box" style="border: 2px solid #f87171"></div> Сектор VI: Космос</div>
+</div>
+
+<script>
+// Данные элементов
+const elements = [
+  {id:"01", code:"Gs"}, {id:"02", code:"Mt"}, {id:"03", code:"Pl"}, {id:"04", code:"Cr"}, {id:"05", code:"Nm"}, {id:"06", code:"Hd"},
+  {id:"07", code:"Lq"}, {id:"08", code:"Cm"}, {id:"09", code:"Sm"}, {id:"10", code:"Pls"}, {id:"11", code:"Qm"}, {id:"12", code:"Bio"},
+  {id:"13", code:"Amo"}, {id:"14", code:"Ae"}, {id:"15", code:"Met"}, {id:"16", code:"Or"}, {id:"17", code:"Iorg"}, {id:"18", code:"Hy"},
+  {id:"19", code:"Tis"}, {id:"20", code:"Fu"}, {id:"21", code:"Cry"}, {id:"22", code:"Ra"}, {id:"23", code:"Ma"}, {id:"24", code:"Ph"},
+  {id:"25", code:"X"}, {id:"26", code:"Qz"}, {id:"27", code:"Gr"}, {id:"28", code:"Fl"}, {id:"29", code:"Cl"}, {id:"30", code:"Dm"},
+  {id:"31", code:"Nt"}, {id:"32", code:"Mo"}, {id:"33", code:"Ti"}, {id:"34", code:"My"}, {id:"35", code:"An"}, {id:"36", code:"Du"}
+];
+
+function getSynergy(el1, el2) {
+  if (el1 === el2) return 4; 
+  if (el1 === "Du" || el2 === "Du") return 4; 
+  
+  let sum = 0;
+  for (let i = 0; i < el1.length; i++) sum += el1.charCodeAt(i);
+  for (let i = 0; i < el2.length; i++) sum += el2.charCodeAt(i);
+  
+  return sum % 5; 
+}
+
+function getSector(index) {
+  return Math.floor(index / 6) + 1;
+}
+
+function renderMatrix() {
+  const table = document.getElementById("matrix");
+  let html = "<tr><th class='corner'>SI \\ SI</th>";
+  
+  // Заголовки столбцов
+  elements.forEach((el, index) => {
+    let sec = getSector(index);
+    let bg = (el.code === "Du") ? "background:#fbbf24; color:black;" : "";
+    html += `<th class="sec${sec}" style="${bg}">SI-${el.id}<br>${el.code}</th>`;
+  });
+  html += "</tr>";
+
+  // Строки
+  elements.forEach((rowEl, rowIndex) => {
+    let secRow = getSector(rowIndex);
+    let rowBg = (rowEl.code === "Du") ? "background:#fbbf24; color:black;" : "";
+    html += `<tr><th class='row-head sec${secRow}' style="${rowBg}">SI-${rowEl.id}<br>${rowEl.code}</th>`;
+    
+    elements.forEach((colEl, colIndex) => {
+      let secCol = getSector(colIndex);
+      let level = getSynergy(rowEl.code, colEl.code);
+      let secClass = (secRow > secCol) ? `sec${secRow}` : `sec${secCol}`;
+      let style = (rowEl.code === "Du" || colEl.code === "Du") ? "border: 1px solid #fbbf24;" : "";
+      
+      html += `<td class="s${level} ${secClass}" style="${style}">${level}</td>`;
+    });
+    html += "</tr>";
+  });
+
+  table.innerHTML = html;
+}
+
+renderMatrix();
+</script>
+
+</body>
+</html>

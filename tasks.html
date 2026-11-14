@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Задачник Дениса | Матрица Синергии</title>
+<link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3389/3389070.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  body { background: #12161f; color: white; font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; text-align: center; }
+  
+  h1 { color: #f3f4f6; margin-bottom: 5px; letter-spacing: 2px; }
+  p { color: #9ca3af; margin-bottom: 20px; font-size: 14px; }
+
+  /* Навигация */
+  .nav-menu { margin-bottom: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;}
+  .nav-btn {
+    display: inline-block; padding: 10px 20px;
+    background: #1e3a8a; color: white; text-decoration: none; 
+    border-radius: 4px; font-weight: bold; border: 1px solid #3b82f6;
+    transition: background 0.2s;
+  }
+  .nav-btn:hover { background: #3b82f6; }
+  .nav-btn.active { background: #fbbf24; color: black; border-color: #fbbf24; }
+
+  .container { max-width: 950px; margin: 0 auto; text-align: left; }
+
+  .class-section {
+    background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+    padding: 20px 30px; margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+  
+  .class-title {
+    color: #60a5fa; font-size: 22px; margin-top: 0; margin-bottom: 20px;
+    border-bottom: 2px dashed #475569; padding-bottom: 10px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  .task-item { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #334155; position: relative; transition: 0.3s; }
+  .task-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  
+  .task-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .level-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+  .lvl-green { background: #064e3b; color: #6ee7b7; border: 1px solid #10b981; }
+  .lvl-yellow { background: #422006; color: #fde047; border: 1px solid #eab308; }
+  .lvl-red { background: #450a0a; color: #fca5a5; border: 1px solid #ef4444; }
+
+  .task-text { font-size: 15px; line-height: 1.6; color: #e2e8f0; }
+  .task-text b { color: #fbbf24; }
+  
+  details { background: #0f172a; padding: 12px 15px; border-radius: 6px; border-left: 4px solid #4ade80; margin-top: 12px; display: none; }
+  summary { cursor: pointer; color: #4ade80; font-weight: bold; font-size: 14px; outline: none; }
+  summary:hover { color: #86efac; }
+  .answer-text { margin-top: 10px; font-size: 14px; color: #cbd5e1; line-height: 1.6; }
+  .answer-text b { color: #fbbf24; }
+
+  .locked { opacity: 0.3; pointer-events: none; filter: grayscale(100%); user-select: none; }
+
+  /* Поле ввода */
+  .input-group { margin-top: 15px; display: flex; gap: 10px; align-items: flex-start; }
+  .input-answer {
+    flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #475569; background: #0f172a; color: white; font-family: inherit;
+  }
+  .btn-check {
+    padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s;
+  }
+  .btn-check:hover { background: #2563eb; }
+  
+  .feedback { margin-top: 10px; font-size: 14px; font-weight: bold; }
+
+  .btn-complete {
+    margin-top: 15px; padding: 8px 16px; background: #4ade80; color: black; border: none; border-radius: 4px;
+    font-weight: bold; cursor: pointer; font-size: 14px; display: none;
+  }
+  .btn-complete:hover { background: #86efac; transform: scale(1.05); }
+
+  .status-solved {
+    margin-top: 15px; padding: 8px 16px; display: inline-block; background: #064e3b; color: #4ade80; border: 1px solid #4ade80;
+    border-radius: 4px; font-weight: bold; font-size: 14px;
+  }
+
+  /* Сертификат */
+  #certificate-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .cert-box { background: linear-gradient(135deg, #1e293b, #0f172a); border: 4px solid #fbbf24; border-radius: 12px; padding: 40px; text-align: center; max-width: 600px; width: 100%; box-shadow: 0 0 50px rgba(251, 191, 36, 0.2); }
+  .cert-box h2 { color: #fbbf24; font-size: 28px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;}
+  .cert-box p { font-size: 18px; color: #e2e8f0; margin-bottom: 15px; }
+  .cert-box .cert-name { font-size: 32px; font-weight: bold; color: #4ade80; margin: 20px 0; font-family: 'Courier New', monospace;}
+  .cert-box .cert-footer { font-size: 14px; color: #9ca3af; margin-top: 30px; border-top: 1px dashed #475569; padding-top: 15px; }
+  
+  .cert-buttons { margin-top: 25px; display: flex; justify-content: center; gap: 15px; }
+  .cert-btn-download { padding: 10px 20px; background: #4ade80; color: black; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+  .cert-btn-close { padding: 10px 20px; background: #fbbf24; color: black; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h1>ЗАДАЧНИК ДЕНИСА</h1>
+<p>Квест-система: 30 задач на пути к званию Магистра Синергии!</p>
+
+<div class="nav-menu">
+  <a href="table.html" class="nav-btn">&larr; К Таблице</a>
+  <a href="tasks.html" class="nav-btn active">Задачник</a>
+  <a href="elements.html" class="nav-btn">К Элементам &rarr;</a>
+</div>
+
+<div class="container">
+  <div style="text-align: center; margin-bottom: 30px; background: #1e3a8a; padding: 15px; border-radius: 8px;">
+    <h2 style="color: white; margin: 0;">Прогресс: <span id="progress-count">0</span> / 30 задач</h2>
+    <button onclick="resetProgress()" style="margin-top: 10px; padding: 5px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Сбросить прогресс</button>
+  </div>
+
+  <div id="tasks-container"></div>
+</div>
+
+<div id="certificate-modal">
+  <div class="cert-box" id="cert-content">
+    <h2>СЕРТИФИКАТ</h2>
+    <p>Настоящим подтверждается, что</p>
+    <div class="cert-name" id="student-name">Ученик</div>
+    <p>успешно прошел все 30 испытаний и доказал высочайший уровень понимания <b>Матрицы Синергии</b>.</p>
+    <div class="cert-footer">
+      <p>Автор проекта: Денис (Таблица Дениса)</p>
+      <p>Дата выдачи: <span id="cert-date"></span></p>
+    </div>
+    <div class="cert-buttons">
+      <button class="cert-btn-download" onclick="downloadCert()">📥 Скачать (PNG)</button>
+      <button class="cert-btn-close" onclick="closeCert()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ПОЛНЫЙ СПИСОК 30 ЗАДАЧ
+  const tasks = [
+    { id: 1, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Gs (SI-01, Газы)</b>. Почему у газов максимальный Импакт в Химии (CH) = 4/4, но нулевая Прочность (ME) = 0/4?", keywords: ["молекул", "связ", "прочн", "движ", "хаос"], answer: "Газы имеют хаотичную структуру молекул. Они легко вступают в реакции, но не держат форму." },
+    { id: 2, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Mt (SI-02, Металлы)</b>. Почему у металлов максимальный Импакт с Электричеством (EL) = 4/4?", keywords: ["электрон", "провод", "ток", "свобод"], answer: "В металлах есть свободные электроны, которые легко перемещаются." },
+    { id: 3, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Pl (SI-03, Полимеры)</b>. Почему у полимеров нулевой Импакт с Электричеством (EL) = 0/4?", keywords: ["диэлектрик", "связан", "не провод", "изоляц"], answer: "Полимеры — диэлектрики. Электроны прочно связаны." },
+    { id: 4, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Cr (SI-04, Керамика)</b>. Почему у керамики максимальный Импакт с Теплом (TH) = 4/4?", keywords: ["термостой", "огнеупор", "плавлен", "решетк"], answer: "Керамика огнеупорна, выдерживает экстремальный нагрев." },
+    { id: 5, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Nm (SI-05, Наноматериалы)</b>. Почему у наноматериалов Импакт с Прочностью (ME) = 4/4?", keywords: ["площад", "поверхност", "связ", "графен", "прочн"], answer: "Огромная площадь поверхности дает сверхпрочные связи." },
+    { id: 6, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Hd (SI-06, Гели)</b>. Почему у гелей средний Импакт с Химией (CH) = 3/4?", keywords: ["жидк", "каркас", "сетк", "структур"], answer: "Гели состоят из жидкой среды и твердого каркаса." },
+    { id: 7, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Lq (SI-07, Жидкости)</b>. Почему у жидкостей высокий Импакт с Химией (CH) = 4/4?", keywords: ["подвиж", "смешив", "раствор", "молекул"], answer: "Молекулы подвижны, легко смешиваются и реагируют." },
+    { id: 8, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Cm (SI-08, Композиты)</b>. Почему у композитов максимальный Импакт с Прочностью (ME) = 4/4?", keywords: ["волокн", "армир", "матриц", "сочет"], answer: "Сочетают разные материалы, волокна берут нагрузку." },
+    { id: 9, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Sm (SI-09, Умные сплавы)</b>. Почему они имеют высокий Импакт с Теплом (TH) = 3/4?", keywords: ["фаз", "памят", "форм", "нагрев"], answer: "Меняют форму при нагревании (фазовые переходы)." },
+    { id: 10, level: "Базовый", lvlClass: "lvl-green", text: "Исследуйте элемент <b>Pls (SI-10, Плазма)</b>. Почему у плазмы максимальный Импакт с Теплом (TH) = 4/4?", keywords: ["иониз", "температур", "звезд", "горяч"], answer: "Ионизированный газ с миллионами градусов." },
+    { id: 11, level: "Средний", lvlClass: "lvl-yellow", text: "Сравните <b>Qm (SI-11)</b> и <b>Bio (SI-12)</b>. Почему у квантовых EL=4/4, а у био — 1/4?", keywords: ["квант", "провод", "инерт", "организм"], answer: "Квантовые проводят, био инертны." },
+    { id: 12, level: "Средний", lvlClass: "lvl-yellow", text: "Сравните <b>Amo (SI-13)</b> и <b>Met (SI-15)</b>. У кого выше Стойкость?", keywords: ["границ", "зерен", "ржав", "искусствен"], answer: "У аморфных нет границ зерен, они не ржавеют." },
+    { id: 13, level: "Средний", lvlClass: "lvl-yellow", text: "Исследуйте <b>Ae (SI-14, Аэрогели)</b>. Почему они теплоизоляторы?", keywords: ["воздух", "пор", "каркас", "изоляц"], answer: "На 99% состоят из воздуха." },
+    { id: 14, level: "Средний", lvlClass: "lvl-yellow", text: "Сравните <b>Or (SI-16)</b> и <b>Iorg (SI-17)</b>. Почему у органики CH=4/4?", keywords: ["углерод", "связ", "жизн", "молекул"], answer: "Углеродные соединения легко образуют связи." },
+    { id: 15, level: "Средний", lvlClass: "lvl-yellow", text: "Сравните <b>Hy (SI-18)</b> и <b>Tis (SI-19)</b>. Почему у гибридов EL=3/4, а у тканей — 1/4?", keywords: ["металл", "органик", "провод", "биолог"], answer: "Гибриды могут проводить, ткани нет." },
+    { id: 16, level: "Средний", lvlClass: "lvl-yellow", text: "Исследуйте <b>Fu (SI-20, Функциональные)</b>. Почему у них OP=4/4?", keywords: ["свет", "лазер", "свойств", "оптик"], answer: "Созданы с заданными оптическими свойствами." },
+    { id: 17, level: "Средний", lvlClass: "lvl-yellow", text: "Исследуйте <b>Cry (SI-21, Криоматериалы)</b>. Почему EL=4/4, а TH=0/4?", keywords: ["сверхпровод", "холод", "сопротивлен", "нагрев"], answer: "Сверхпроводимость при холоде, разрушаются от тепла." },
+    { id: 18, level: "Средний", lvlClass: "lvl-yellow", text: "Исследуйте <b>Ra (SI-22, Радиационные)</b>. Почему TH и Стойкость = 4/4?", keywords: ["радиац", "реактор", "облучен", "стойк"], answer: "Работают в ядерных реакторах." },
+    { id: 19, level: "Средний", lvlClass: "lvl-yellow", text: "Исследуйте <b>Ma (SI-23, Магнитные)</b>. Почему EL=4/4?", keywords: ["магнит", "поле", "индукц", "ток"], answer: "Электромагнитная индукция." },
+    { id: 20, level: "Средний", lvlClass: "lvl-yellow", text: "Исследуйте <b>Ph (SI-24, Фотонные)</b>. Почему OP=4/4?", keywords: ["свет", "кристалл", "прелом", "фотон"], answer: "Управляют светом на квантовом уровне." },
+    { id: 21, level: "Сложный", lvlClass: "lvl-red", text: "Исследуйте <b>X (SI-25, Экстремальные)</b>. Почему код SECRET?", keywords: ["границ", "неизвест", "плазм", "давлен"], answer: "На границе понимания, свойства непредсказуемы." },
+    { id: 22, level: "Сложный", lvlClass: "lvl-red", text: "Исследуйте <b>Qz (SI-26, Кварц)</b>. Почему он в часах?", keywords: ["пьезо", "заряд", "частот", "сжат"], answer: "Пьезоэлектрический эффект при сжатии." },
+    { id: 23, level: "Сложный", lvlClass: "lvl-red", text: "Сравните <b>Gr (SI-27)</b> и <b>Fl (SI-28)</b>. Почему у гранита 4, а у кремня 3?", keywords: ["кристалл", "спаян", "хрупк", "структур"], answer: "Гранит — спаянные кристаллы." },
+    { id: 24, level: "Сложный", lvlClass: "lvl-red", text: "Исследуйте <b>Cl (SI-29, Глина)</b>. Почему низкая прочность, но высокая химия?", keywords: ["слоист", "скольз", "вод", "лепк"], answer: "Слоистая структура, активна с водой." },
+    { id: 25, level: "Сложный", lvlClass: "lvl-red", text: "Исследуйте <b>Dm (SI-30, Алмаз)</b>. Почему максимальная прочность, но нулевая химия?", keywords: ["ковалент", "решетк", "инерт", "углерод"], answer: "Идеальная решетка, химически инертен." },
+    { id: 26, level: "Сложный", lvlClass: "lvl-red", text: "Посчитайте Импакт для <b>Nt (SI-31)</b>, если F=4, C=1, ΔE=4, R=1.", keywords: ["20", "гравитац", "нейтрон", "звезд"], answer: "СИ = 20. Материя нейтронных звезд." },
+    { id: 27, level: "Сложный", lvlClass: "lvl-red", text: "Исследуйте <b>Mo (SI-32, Мёбиус-материя)</b>. Почему EL и OP = 4/4?", keywords: ["тополог", "поверхност", "квант", "без потерь"], answer: "Топологические токи без потерь." },
+    { id: 28, level: "Сложный", lvlClass: "lvl-red", text: "Исследуйте <b>Ti (SI-33, Временные кристаллы)</b>. Почему TH=4/4?", keywords: ["врем", "квант", "цикл", "энерг"], answer: "Квантовый цикл во времени." },
+    { id: 29, level: "Сложный", lvlClass: "lvl-red", text: "Исследуйте <b>My (SI-34, Мицелий)</b>. Почему CH и ME высокие?", keywords: ["гриб", "рост", "связ", "поглощ"], answer: "Грибница связывает частицы в композит." },
+    { id: 30, level: "Сложный", lvlClass: "lvl-red", text: "Исследуйте <b>An (SI-35)</b> и <b>Du (SI-36)</b>. Почему у Денисия все 4/4?", keywords: ["аннигил", "энерг", "предел", "синтез"], answer: "Антиматерия аннигилирует, Денисий — предел." }
+  ];
+
+  let solvedCount = localStorage.getItem('denisSolvedTasks') ? parseInt(localStorage.getItem('denisSolvedTasks')) : 0;
+  let studentName = localStorage.getItem('denisStudentName') || "";
+  let studentSurname = localStorage.getItem('denisStudentSurname') || "";
+
+  function init() {
+    if (!studentName) { studentName = prompt("Введите ваше Имя:") || "Ученик"; localStorage.setItem('denisStudentName', studentName); }
+    if (!studentSurname) { studentSurname = prompt("Введите вашу Фамилию:") || ""; localStorage.setItem('denisStudentSurname', studentSurname); }
+    document.getElementById('student-name').innerText = studentName + " " + studentSurname;
+    document.getElementById('cert-date').innerText = new Date().toLocaleDateString();
+    renderTasks(); updateProgress();
+  }
+
+  function renderTasks() {
+    const container = document.getElementById('tasks-container');
+    container.innerHTML = "";
+    let currentSectionLevel = "";
+
+    tasks.forEach(task => {
+      if (task.level !== currentSectionLevel) {
+        let section = document.createElement('div');
+        section.className = 'class-section';
+        if (task.level === "Средний" && solvedCount < 10) {
+            section.innerHTML = `<h2 class="class-title" style="color:#ef4444;">Уровень: ${task.level} (ЗАБЛОКИРОВАНО - решите 10 базовых задач)</h2>`;
+        } else {
+            section.innerHTML = `<h2 class="class-title">Уровень: ${task.level}</h2>`;
+        }
+        container.appendChild(section);
+        currentSectionLevel = task.level;
+      }
+
+      const lastSection = container.lastElementChild;
+      let taskDiv = document.createElement('div');
+      taskDiv.className = 'task-item';
+      taskDiv.id = 'task-' + task.id;
+      
+      if (task.id > solvedCount + 1) taskDiv.classList.add('locked');
+      if (task.level === "Средний" && solvedCount < 10) taskDiv.classList.add('locked');
+
+      taskDiv.innerHTML = `
+        <div class="task-header"><span class="level-badge ${task.lvlClass}">${task.level}</span><b>Задача ${task.id}</b></div>
+        <div class="task-text">${task.text}</div>
+      `;
+
+      if (task.id <= solvedCount) {
+        let solvedSpan = document.createElement('div');
+        solvedSpan.className = 'status-solved';
+        solvedSpan.innerHTML = '✅ Задача решена';
+        taskDiv.appendChild(solvedSpan);
+      } else {
+        let inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group';
+        inputGroup.innerHTML = `
+          <input type="text" id="input-${task.id}" class="input-answer" placeholder="Введите ответ...">
+          <button class="btn-check" onclick="checkAnswer(${task.id})">Проверить</button>
+        `;
+        taskDiv.appendChild(inputGroup);
+        
+        let feedback = document.createElement('div');
+        feedback.id = 'feedback-' + task.id;
+        feedback.className = 'feedback';
+        taskDiv.appendChild(feedback);
+
+        let details = document.createElement('details');
+        details.id = 'details-' + task.id;
+        details.innerHTML = `<summary>Показать правильный ответ</summary><div class="answer-text">${task.answer}</div>`;
+        taskDiv.appendChild(details);
+
+        let btn = document.createElement('button');
+        btn.id = 'btn-solve-' + task.id;
+        btn.className = 'btn-complete';
+        btn.innerText = 'Я решил эту задачу! →';
+        btn.onclick = () => solveTask(task.id);
+        taskDiv.appendChild(btn);
+      }
+      lastSection.appendChild(taskDiv);
+    });
+  }
+
+  function checkAnswer(taskId) {
+    const input = document.getElementById('input-' + taskId);
+    const feedback = document.getElementById('feedback-' + taskId);
+    const details = document.getElementById('details-' + taskId);
+    const btn = document.getElementById('btn-solve-' + taskId);
+    const userAnswer = input.value.toLowerCase();
+    const task = tasks.find(t => t.id === taskId);
+
+    if (!userAnswer.trim()) {
+      feedback.style.color = '#fbbf24';
+      feedback.innerText = '⚠️ Напишите свой ответ!';
+      return;
+    }
+
+    const isCorrect = task.keywords.some(word => userAnswer.includes(word));
+
+    if (isCorrect) {
+      feedback.style.color = '#4ade80';
+      feedback.innerText = '✅ Отлично! Ответ верный. Нажмите кнопку ниже.';
+      input.disabled = true;
+      input.nextElementSibling.style.display = 'none';
+      details.style.display = 'none';
+      btn.style.display = 'inline-block';
+    } else {
+      feedback.style.color = '#ef4444';
+      feedback.innerText = '❌ Не совсем. Попробуйте еще раз.';
+      details.style.display = 'block';
+    }
+  }
+
+  function solveTask(taskId) {
+    if (taskId === solvedCount + 1) {
+      solvedCount = taskId;
+      localStorage.setItem('denisSolvedTasks', solvedCount);
+      renderTasks(); updateProgress();
+      if (solvedCount === 30) setTimeout(showCert, 1000);
+    }
+  }
+
+  function updateProgress() {
+    document.getElementById('progress-count').innerText = solvedCount;
+  }
+
+  function showCert() { document.getElementById('certificate-modal').style.display = 'flex'; }
+  function closeCert() { document.getElementById('certificate-modal').style.display = 'none'; }
+
+  function downloadCert() {
+    const certBox = document.getElementById('cert-content');
+    const buttons = certBox.querySelector('.cert-buttons');
+    buttons.style.display = 'none';
+    html2canvas(certBox, { backgroundColor: null, scale: 2 }).then(canvas => {
+      buttons.style.display = 'flex';
+      const link = document.createElement('a');
+      link.download = 'Сертификат_Матрица_Синергии.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).catch(err => {
+      buttons.style.display = 'flex';
+      alert('Ошибка: ' + err);
+    });
+  }
+
+  function resetProgress() {
+    if(confirm("Сбросить весь прогресс и начать заново?")) {
+      localStorage.removeItem('denisSolvedTasks');
+      solvedCount = 0; renderTasks(); updateProgress();
+    }
+  }
+
+  init();
+</script>
+
+</body>
+</html>

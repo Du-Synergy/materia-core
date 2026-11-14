@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Периодическая система материалов (Таблица Дениса)</title>
+<style>
+  body { background: #12161f; color: white; font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; text-align: center; }
+  h1 { color: #f3f4f6; margin-bottom: 5px; letter-spacing: 2px; font-size: 24px;}
+  p { color: #9ca3af; margin-bottom: 20px; font-size: 14px; }
+
+  .nav-btn {
+    display: inline-block; margin-bottom: 30px; padding: 10px 20px;
+    background: #1e3a8a; color: white; text-decoration: none; 
+    border-radius: 4px; font-weight: bold; border: 1px solid #3b82f6;
+    transition: background 0.2s;
+  }
+  .nav-btn:hover { background: #3b82f6; }
+
+  /* Сетка 6x6 */
+  .grid { 
+    display: grid; 
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px; 
+    max-width: 950px; 
+    margin: 0 auto; 
+  }
+  
+  .element-card {
+    background: #1f2937; border: 2px solid #4b5563; border-radius: 6px;
+    display: flex; flex-direction: column; justify-content: space-between; 
+    padding: 8px; aspect-ratio: 1 / 1;
+    transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; text-align: left;
+  }
+  .element-card:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(255,255,255,0.3); z-index: 10; }
+  
+  .top { display: flex; justify-content: space-between; font-size: 9px; color: #9ca3af; font-family: 'Courier New', monospace; }
+  .si-index { color: #fbbf24; font-weight: bold; }
+  .symbol { font-size: 26px; font-weight: bold; font-family: 'Courier New', monospace; line-height: 1; color: #f3f4f6; text-align: center; margin: 4px 0;}
+  .name { font-size: 9px; font-weight: 600; color: #d1d5db; text-transform: uppercase; text-align: center; line-height: 1.1; }
+  .bottom { display: flex; justify-content: center; gap: 3px; font-size: 8px; color: #fbbf24; font-family: 'Courier New', monospace; margin-top: 4px;}
+  
+  /* Цвета элементов */
+  .metal { border-color: #60a5fa; } .metal .symbol { color: #60a5fa; }
+  .polymer { border-color: #f472b6; } .polymer .symbol { color: #f472b6; }
+  .ceramic { border-color: #fbbf24; } .ceramic .symbol { color: #fbbf24; }
+  .gas { border-color: #34d399; } .gas .symbol { color: #34d399; }
+  .nano { border-color: #a78bfa; } .nano .symbol { color: #a78bfa; }
+  .hydrogel { border-color: #2dd4bf; } .hydrogel .symbol { color: #2dd4bf; }
+  .liquid { border-color: #38bdf8; } .liquid .symbol { color: #38bdf8; }
+  .composite { border-color: #fbbf24; background: linear-gradient(135deg, #1f2937, #451a03); } .composite .symbol { color: #fcd34d; }
+  .smart { border-color: #f87171; } .smart .symbol { color: #f87171; }
+  .plasma { border-color: #e879f9; } .plasma .symbol { color: #e879f9; }
+  .quantum { border-color: #c084fc; background: linear-gradient(135deg, #1f2937, #3b0764); } .quantum .symbol { color: #d8b4fe; }
+  .bio { border-color: #4ade80; background: linear-gradient(135deg, #1f2937, #14532d); } .bio .symbol { color: #86efac; }
+  .amorphous { border-color: #94a3b8; background: linear-gradient(135deg, #1f2937, #334155); } .amorphous .symbol { color: #cbd5e1; }
+  .aero { border-color: #bae6fd; background: linear-gradient(135deg, #1f2937, #0369a1); } .aero .symbol { color: #e0f2fe; }
+  .meta { border-color: #fb7185; background: linear-gradient(135deg, #1f2937, #4c0519); } .meta .symbol { color: #fda4af; }
+  .organic { border-color: #6ee7b7; } .organic .symbol { color: #6ee7b7; }
+  .inorganic { border-color: #fcd34d; } .inorganic .symbol { color: #fcd34d; }
+  .hybrid { border-color: #f0abfc; } .hybrid .symbol { color: #f0abfc; }
+  .living { border-color: #86efac; background: #064e3b; } .living .symbol { color: #bbf7d0; }
+  .functional { border-color: #a5b4fc; } .functional .symbol { color: #a5b4fc; }
+  .cryo { border-color: #7dd3fc; background: #082f49; } .cryo .symbol { color: #bae6fd; }
+  .radiation { border-color: #fde047; background: #422006; } .radiation .symbol { color: #fef08a; }
+  .magnetic { border-color: #f87171; background: #450a0a; } .magnetic .symbol { color: #fca5a5; }
+  .photonic { border-color: #fbcfe8; background: #4c0519; } .photonic .symbol { color: #fbcfe8; }
+  .xmaterial { border-color: #ffffff; background: #000000; box-shadow: 0 0 10px #ffffff inset; } .xmaterial .symbol { color: #ffffff; }
+  .quartz { border-color: #a78bfa; background: #2e1065; } .quartz .symbol { color: #ddd6fe; }
+  .granite { border-color: #78716c; background: #292524; } .granite .symbol { color: #d6d3d1; }
+  .flint { border-color: #57534e; background: #1c1917; } .flint .symbol { color: #a8a29e; }
+  .clay { border-color: #d97706; background: #451a03; } .clay .symbol { color: #fcd34d; }
+  .diamond { border-color: #ffffff; background: #0f172a; box-shadow: 0 0 15px rgba(255,255,255,0.2) inset; } .diamond .symbol { color: #ffffff; }
+  .neutronium { border-color: #fca5a5; background: #000000; box-shadow: 0 0 10px #ef4444 inset; } .neutronium .symbol { color: #fca5a5; }
+  .mobius { border-color: #f9a8d4; background: linear-gradient(135deg, #1f2937, #831843); } .mobius .symbol { color: #f9a8d4; }
+  .timecrystal { border-color: #6ee7b7; background: linear-gradient(135deg, #1f2937, #064e3b); } .timecrystal .symbol { color: #6ee7b7; }
+  .mycelium { border-color: #d9f99d; background: #1a2e05; } .mycelium .symbol { color: #d9f99d; }
+  .antimatter { border-color: #e879f9; background: #000000; box-shadow: 0 0 15px #e879f9; } .antimatter .symbol { color: #e879f9; }
+  
+  /* Стиль для Денисия (36) */
+  .denisium { border-color: #fbbf24; background: #450a0a; box-shadow: 0 0 20px #fbbf24 inset; } 
+  .denisium .symbol { color: #fbbf24; text-shadow: 0 0 10px #fbbf24; }
+
+  /* КОДЕКС */
+  .laws-box {
+    max-width: 950px; margin: 40px auto 0; background: #1e293b; border: 1px solid #334155;
+    border-left: 6px solid #fbbf24; padding: 25px 30px; text-align: left; border-radius: 4px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  }
+  .laws-box h3 { color: #fbbf24; font-size: 20px; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; border-bottom: 2px dashed #475569; padding-bottom: 10px; text-align: center; letter-spacing: 1px;}
+  .law-item { margin-bottom: 12px; font-size: 14px; line-height: 1.5; color: #cbd5e1; }
+  .law-item b { color: #f3f4f6; }
+  .law-author { color: #60a5fa; font-style: italic; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>ПЕРИОДИЧЕСКАЯ СИСТЕМА ДЕНИСА</h1>
+<p>36 элементов. От Газов до Денисия.</p>
+
+<a href="table.html" class="nav-btn">&larr; Вернуться к Матрице (Таблице)</a>
+
+<!-- КАРТОЧКИ -->
+<div class="grid">
+  <!-- 1-15 -->
+  <div class="element-card gas"><div class="top"><span class="si-index">SI-01</span><span>Gs</span></div><div class="symbol">Gs</div><div class="name">Газы</div><div class="bottom"><span>CH</span><span>EL</span></div></div>
+  <div class="element-card metal"><div class="top"><span class="si-index">SI-02</span><span>Mt</span></div><div class="symbol">Mt</div><div class="name">Металлы</div><div class="bottom"><span>EL</span><span>ME</span><span>TH</span></div></div>
+  <div class="element-card polymer"><div class="top"><span class="si-index">SI-03</span><span>Pl</span></div><div class="symbol">Pl</div><div class="name">Полимеры</div><div class="bottom"><span>CH</span><span>ME</span></div></div>
+  <div class="element-card ceramic"><div class="top"><span class="si-index">SI-04</span><span>Cr</span></div><div class="symbol">Cr</div><div class="name">Керамика</div><div class="bottom"><span>TH</span><span>CH</span></div></div>
+  <div class="element-card nano"><div class="top"><span class="si-index">SI-05</span><span>Nm</span></div><div class="symbol">Nm</div><div class="name">Наноматериалы</div><div class="bottom"><span>EL</span><span>ME</span><span>CH</span></div></div>
+  <div class="element-card hydrogel"><div class="top"><span class="si-index">SI-06</span><span>Hd</span></div><div class="symbol">Hd</div><div class="name">Гели</div><div class="bottom"><span>CH</span><span>OP</span></div></div>
+  <div class="element-card liquid"><div class="top"><span class="si-index">SI-07</span><span>Lq</span></div><div class="symbol">Lq</div><div class="name">Жидкости</div><div class="bottom"><span>EL</span><span>CH</span></div></div>
+  <div class="element-card composite"><div class="top"><span class="si-index">SI-08</span><span>Cm</span></div><div class="symbol">Cm</div><div class="name">Композиты</div><div class="bottom"><span>ME</span><span>CH</span></div></div>
+  <div class="element-card smart"><div class="top"><span class="si-index">SI-09</span><span>Sm</span></div><div class="symbol">Sm</div><div class="name">Умные сплавы</div><div class="bottom"><span>TH</span><span>EL</span></div></div>
+  <div class="element-card plasma"><div class="top"><span class="si-index">SI-10</span><span>Pls</span></div><div class="symbol">Pls</div><div class="name">Плазма</div><div class="bottom"><span>TH</span><span>EL</span><span>OP</span></div></div>
+  <div class="element-card quantum"><div class="top"><span class="si-index">SI-11</span><span>Qm</span></div><div class="symbol">Qm</div><div class="name">Квантовые</div><div class="bottom"><span>EL</span><span>OP</span></div></div>
+  <div class="element-card bio"><div class="top"><span class="si-index">SI-12</span><span>Bio</span></div><div class="symbol">Bio</div><div class="name">Биоматериалы</div><div class="bottom"><span>CH</span><span>ME</span></div></div>
+  <div class="element-card amorphous"><div class="top"><span class="si-index">SI-13</span><span>Amo</span></div><div class="symbol">Amo</div><div class="name">Аморфные металлы</div><div class="bottom"><span>ME</span><span>EL</span></div></div>
+  <div class="element-card aero"><div class="top"><span class="si-index">SI-14</span><span>Ae</span></div><div class="symbol">Ae</div><div class="name">Аэрогели</div><div class="bottom"><span>TH</span><span>OP</span></div></div>
+  <div class="element-card meta"><div class="top"><span class="si-index">SI-15</span><span>Met</span></div><div class="symbol">Met</div><div class="name">Метаматериалы</div><div class="bottom"><span>OP</span><span>EL</span></div></div>
+
+  <!-- 16-30 -->
+  <div class="element-card organic"><div class="top"><span class="si-index">SI-16</span><span>Or</span></div><div class="symbol">Or</div><div class="name">Органика</div><div class="bottom"><span>CH</span><span>ME</span></div></div>
+  <div class="element-card inorganic"><div class="top"><span class="si-index">SI-17</span><span>Iorg</span></div><div class="symbol">Iorg</div><div class="name">Неорганика</div><div class="bottom"><span>TH</span><span>CH</span></div></div>
+  <div class="element-card hybrid"><div class="top"><span class="si-index">SI-18</span><span>Hy</span></div><div class="symbol">Hy</div><div class="name">Гибриды</div><div class="bottom"><span>EL</span><span>CH</span><span>ME</span></div></div>
+  <div class="element-card living"><div class="top"><span class="si-index">SI-19</span><span>Tis</span></div><div class="symbol">Tis</div><div class="name">Живые ткани</div><div class="bottom"><span>ME</span><span>CH</span></div></div>
+  <div class="element-card functional"><div class="top"><span class="si-index">SI-20</span><span>Fu</span></div><div class="symbol">Fu</div><div class="name">Функциональные</div><div class="bottom"><span>EL</span><span>OP</span><span>TH</span></div></div>
+  <div class="element-card cryo"><div class="top"><span class="si-index">SI-21</span><span>Cry</span></div><div class="symbol">Cry</div><div class="name">Криоматериалы</div><div class="bottom"><span>EL</span><span>TH</span></div></div>
+  <div class="element-card radiation"><div class="top"><span class="si-index">SI-22</span><span>Ra</span></div><div class="symbol">Ra</div><div class="name">Радиационные</div><div class="bottom"><span>TH</span><span>ME</span></div></div>
+  <div class="element-card magnetic"><div class="top"><span class="si-index">SI-23</span><span>Ma</span></div><div class="symbol">Ma</div><div class="name">Магнитные</div><div class="bottom"><span>EL</span><span>ME</span></div></div>
+  <div class="element-card photonic"><div class="top"><span class="si-index">SI-24</span><span>Ph</span></div><div class="symbol">Ph</div><div class="name">Фотонные</div><div class="bottom"><span>OP</span><span>EL</span></div></div>
+  <div class="element-card xmaterial"><div class="top"><span class="si-index">SI-25</span><span>X</span></div><div class="symbol">X</div><div class="name">Экстремальные</div><div class="bottom"><span>??</span></div></div>
+  <div class="element-card quartz"><div class="top"><span class="si-index">SI-26</span><span>Qz</span></div><div class="symbol">Qz</div><div class="name">Кварц</div><div class="bottom"><span>EL</span><span>OP</span></div></div>
+  <div class="element-card granite"><div class="top"><span class="si-index">SI-27</span><span>Gr</span></div><div class="symbol">Gr</div><div class="name">Гранит</div><div class="bottom"><span>ME</span><span>TH</span></div></div>
+  <div class="element-card flint"><div class="top"><span class="si-index">SI-28</span><span>Fl</span></div><div class="symbol">Fl</div><div class="name">Кремень</div><div class="bottom"><span>ME</span><span>CH</span></div></div>
+  <div class="element-card clay"><div class="top"><span class="si-index">SI-29</span><span>Cl</span></div><div class="symbol">Cl</div><div class="name">Глина</div><div class="bottom"><span>CH</span><span>TH</span></div></div>
+  <div class="element-card diamond"><div class="top"><span class="si-index">SI-30</span><span>Dm</span></div><div class="symbol">Dm</div><div class="name">Алмаз</div><div class="bottom"><span>ME</span><span>OP</span></div></div>
+
+  <!-- 31-36 -->
+  <div class="element-card neutronium"><div class="top"><span class="si-index">SI-31</span><span>Nt</span></div><div class="symbol">Nt</div><div class="name">Нейтрониум</div><div class="bottom"><span>ME</span><span>TH</span></div></div>
+  <div class="element-card mobius"><div class="top"><span class="si-index">SI-32</span><span>Mo</span></div><div class="symbol">Mo</div><div class="name">Мёбиус-материя</div><div class="bottom"><span>OP</span><span>EL</span></div></div>
+  <div class="element-card timecrystal"><div class="top"><span class="si-index">SI-33</span><span>Ti</span></div><div class="symbol">Ti</div><div class="name">Временные кристаллы</div><div class="bottom"><span>TH</span><span>OP</span></div></div>
+  <div class="element-card mycelium"><div class="top"><span class="si-index">SI-34</span><span>My</span></div><div class="symbol">My</div><div class="name">Мицелий</div><div class="bottom"><span>CH</span><span>ME</span></div></div>
+  <div class="element-card antimatter"><div class="top"><span class="si-index">SI-35</span><span>An</span></div><div class="symbol">An</div><div class="name">Антиматерия</div><div class="bottom"><span>CH</span><span>TH</span><span>EL</span></div></div>
+  
+  <!-- 36 ДЕНИСИЙ -->
+  <div class="element-card denisium"><div class="top"><span class="si-index">SI-36</span><span>Du</span></div><div class="symbol">Du</div><div class="name">Денисий</div><div class="bottom"><span>EL</span><span>ME</span><span>TH</span><span>CH</span><span>OP</span></div></div>
+</div>
+
+<!-- КОДЕКС -->
+<div class="laws-box">
+  <h3>Кодекс Синергии (Законы Дениса)</h3>
+  
+  <div class="law-item"><b>Закон I. Энергетический мост.</b> <span class="law-author">(Закон Дениса)</span><br>Физические свойства (тепло, прочность) передают энергию химическим реакциям.</div>
+  <div class="law-item"><b>Закон II. Хаос (Закон Газов).</b> <span class="law-author">(Закон Дениса)</span><br>Чем хаотичнее структура, тем ниже их механическая прочность.</div>
+  <div class="law-item"><b>Закон III. Барьер (Закон Керамики).</b> <span class="law-author">(Закон Дениса)</span><br>Высокая термостойкость создаёт «барьер», дающий стойкость.</div>
+  <div class="law-item"><b>Закон IV. Квантовый скачок.</b> <span class="law-author">(Закон Дениса)</span><br>У наноматериалов свойства умножаются.</div>
+  <div class="law-item"><b>Закон V. Предел (Закон Полимеров).</b> <span class="law-author">(Закон Дениса)</span><br>При превышении теплового порога начинается деградация.</div>
+  <div class="law-item"><b>Закон VI. Квантовый предел.</b> <span class="law-author">(Закон Дениса)</span><br>В наномасштабе работают квантовые эффекты.</div>
+  <div class="law-item"><b>Закон VII. Биосовместимость.</b> <span class="law-author">(Закон Дениса)</span><br>Материалы должны иметь инертность и упругость.</div>
+  <div class="law-item"><b>Закон VIII. Стеклянный парадокс.</b> <span class="law-author">(Закон Дениса)</span><br>Аморфные металлы сочетают прочность и хаос.</div>
+  <div class="law-item"><b>Закон IX. Воздушность.</b> <span class="law-author">(Закон Дениса)</span><br>Аэрогели на 99% состоят из газа.</div>
+  <div class="law-item"><b>Закон X. Отрицательное преломление.</b> <span class="law-author">(Закон Дениса)</span><br>Метаматериалы нарушают классическую оптику.</div>
+  <div class="law-item"><b>Закон XI. Синтез сред.</b> <span class="law-author">(Закон Дениса)</span><br>Гибриды объединяют несовместимое.</div>
+  <div class="law-item"><b>Закон XII. Абсолютный ноль.</b> <span class="law-author">(Закон Дениса)</span><br>Криоматериалы дают сверхпроводимость.</div>
+  <div class="law-item"><b>Закон XIII. Радиационный барьер.</b> <span class="law-author">(Закон Дениса)</span><br>Стойкость к облучению.</div>
+  <div class="law-item"><b>Закон XIV. Спиновый порядок.</b> <span class="law-author">(Закон Дениса)</span><br>Магнитные домены.</div>
+  <div class="law-item"><b>Закон XV. Теория всего.</b> <span class="law-author">(Закон Дениса)</span><br>Экстремальные материалы (X) — предел понимания.</div>
+  <div class="law-item"><b>Закон XVI. Каменная память.</b> <span class="law-author">(Закон Дениса)</span><br>Минералы хранят историю Земли.</div>
+  <div class="law-item"><b>Закон XVII. Абсолютная твердость.</b> <span class="law-author">(Закон Дениса)</span><br>Алмаз — предел механической синергии.</div>
+  <div class="law-item"><b>Закон XVIII. Гравитационный коллапс.</b> <span class="law-author">(Закон Дениса)</span><br>Нейтрониум: гравитация побеждает химию.</div>
+  <div class="law-item"><b>Закон XIX. Петля времени.</b> <span class="law-author">(Закон Дениса)</span><br>Временные кристаллы и Мёбиус-материя нарушают симметрию.</div>
+  <div class="law-item"><b>Закон XX. Абсолютный аннигиляционный предел.</b> <span class="law-author">(Закон Дениса)</span><br>Антиматерия: 100% энергии.</div>
+  <div class="law-item"><b>Закон XXI. Абсолютный синтез.</b> <span class="law-author">(Закон Дениса)</span><br>Денисий (Du) — вершина эволюции материи (4/4).</div>
+  
+  <div class="law-item">
+    <b>Закон XXII. Уравнение Дениса (Синергетический Импакт).</b> <span class="law-author">(Закон Дениса)</span><br>
+    Универсальная формула для расчета Синергетического Импакта (СИ):<br>
+    <div style="text-align: center; font-family: 'Courier New', monospace; font-size: 18px; color: #fbbf24; margin: 10px 0;">
+      СИ = (F + C) × ΔE / R
+    </div>
+  </div>
+
+  <div class="law-item">
+    <b>Закон XXIII. Энтропия Синергии.</b> <span class="law-author">(Закон Дениса)</span><br>
+    Понятие, описывающее меру хаоса при взаимодействии. Если Синергетический Импакт (СИ) высокий, Энтропия низкая (система стабильна). Если СИ низкий, Энтропия высокая (материал разрушается).
+  </div>
+</div>
+
+</body>
+</html>
