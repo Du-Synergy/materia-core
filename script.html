@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIwIiBmaWxsPSIjMGEwZTE3Ii8+PHBhdGggZD0iTSAyMCAzMCBRIDM1IDEwLCA1MCAzMCBUIDgwIDMwIiBzdHJva2U9IiNlZjQ0NDQiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTSAyMCA1MCBRIDM1IDMwLCA1MCA1MCBUIDgwIDUwIiBzdHJva2U9IiM0YWRlODAiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTSAyMCA3MCBRIDM1IDUwLCA1MCA3MCBUIDgwIDcwIiBzdHJva2U9IiMzYjgyZjYiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmJiZjI0IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=">
+<title>FHS-Script | Мастерская</title>
+<style>
+    :root {
+        --bg-main: #0a0e17;
+        --bg-panel: #111827;
+        --text-main: #e5e7eb;
+        --text-muted: #6b7280;
+        --accent-green: #10b981;
+        --accent-red: #ef4444;
+        --accent-yellow: #f59e0b;
+        --border-color: #374151;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    header {
+        background: var(--bg-panel);
+        border-bottom: 2px solid var(--border-color);
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .logo {
+        color: var(--accent-green);
+        font-size: 18px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: 'Courier New', monospace;
+    }
+
+    .mode-switch { display: flex; gap: 5px; }
+
+    .mode-btn {
+        padding: 5px 10px;
+        background: #1f2937;
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .mode-btn.active {
+        background: var(--accent-green);
+        color: black;
+        border-color: var(--accent-green);
+    }
+
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    button {
+        padding: 8px 15px;
+        border: 1px solid var(--border-color);
+        background: #1f2937;
+        color: var(--text-main);
+        cursor: pointer;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+
+    button:hover { background: #374151; }
+    button.primary { border-color: var(--accent-green); color: var(--accent-green); }
+    button.primary:hover { background: rgba(16, 185, 129, 0.1); }
+    button.warn { border-color: var(--accent-yellow); color: var(--accent-yellow); }
+    button.warn:hover { background: rgba(245, 158, 11, 0.1); }
+
+    /* --- РЕЖИМ МАСТЕРСКОЙ --- */
+    #workshop-mode { display: flex; flex: 1; overflow: hidden; }
+    .code-panel { flex: 1; display: flex; flex-direction: column; border-right: 2px solid var(--border-color); min-width: 300px; }
+    .tabs { display: flex; background: #000; border-bottom: 1px solid var(--border-color); }
+    .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid transparent; }
+    .tab-btn.active { color: var(--accent-green); border-bottom-color: var(--accent-green); background: var(--bg-panel); }
+    textarea { flex: 1; background: #000; color: var(--accent-green); border: none; padding: 15px; font-family: 'Courier New', monospace; font-size: 14px; resize: none; outline: none; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+    .result-panel { flex: 1; display: flex; flex-direction: column; background: #fff; min-width: 300px; }
+    .result-header { background: var(--bg-panel); color: var(--text-muted); padding: 10px; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; }
+    iframe { flex: 1; border: none; width: 100%; height: 100%; background: #fff; }
+
+    /* --- РЕЖИМ ТЕРМИНАЛА --- */
+    #terminal-mode { display: none; flex: 1; background: #000; padding: 20px; overflow-y: auto; flex-direction: column; font-family: 'Courier New', monospace; font-size: 16px; color: var(--accent-green); }
+    .term-line { margin-bottom: 5px; white-space: pre-wrap; }
+    .term-input-line { display: flex; align-items: center; margin-top: 10px; }
+    .term-prompt { color: var(--accent-green); margin-right: 10px; font-weight: bold; }
+    #term-input { background: transparent; border: none !important; color: var(--accent-green); font-family: 'Courier New', monospace; font-size: 16px; outline: none !important; flex: 1; box-shadow: none !important; }
+    .error-msg { color: var(--accent-red); }
+
+    @media (max-width: 768px) {
+        #workshop-mode { flex-direction: column; }
+        .code-panel { border-right: none; border-bottom: 2px solid var(--border-color); }
+    }
+</style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">FHS-SCRIPT v2.0</div>
+        <div class="mode-switch">
+            <button class="mode-btn active" id="btn-workshop" onclick="switchMode('workshop')">Мастерская</button>
+            <button class="mode-btn" id="btn-terminal" onclick="switchMode('terminal')">Терминал</button>
+        </div>
+        <div class="controls" id="workshop-controls">
+            <button class="warn" onclick="checkSyntax()">Проверить</button>
+            <button class="primary" onclick="runCode()">Запустить (▶)</button>
+            <button onclick="downloadCode()">Скачать</button>
+        </div>
+    </header>
+
+    <!-- МАСТЕРСКАЯ -->
+    <div id="workshop-mode">
+        <div class="code-panel">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('html', this)">HTML</button>
+                <button class="tab-btn" onclick="switchTab('css', this)">CSS</button>
+                <button class="tab-btn" onclick="switchTab('js', this)">JS</button>
+            </div>
+            <textarea id="editor-html" placeholder="<!-- Введите HTML код здесь -->"></textarea>
+            <textarea id="editor-css" style="display:none;" placeholder="/* Введите CSS код здесь */"></textarea>
+            <textarea id="editor-js" style="display:none;" placeholder="// Введите JavaScript код здесь"></textarea>
+        </div>
+        <div class="result-panel">
+            <div class="result-header">
+                <span>РЕЗУЛЬТАТ</span>
+                <span id="status-text" style="color: var(--accent-green);">ГОТОВО</span>
+            </div>
+            <iframe id="preview-frame"></iframe>
+        </div>
+    </div>
+
+    <!-- ТЕРМИНАЛ -->
+    <div id="terminal-mode">
+        <div id="term-output">
+            <div class="term-line">FHS-Script Terminal v2.0</div>
+            <div class="term-line">Введите код и нажмите Enter. (Например: 1+1 или print("Привет"))</div>
+            <br>
+        </div>
+        <div class="term-input-line">
+            <span class="term-prompt">> </span>
+            <input type="text" id="term-input" autocomplete="off" autofocus>
+        </div>
+    </div>
+
+    <div id="console-log" style="display:none;"></div>
+
+<script>
+    // ================= ПЕРЕКЛЮЧЕНИЕ РЕЖИМОВ =================
+    function switchMode(mode) {
+        if (mode === 'workshop') {
+            document.getElementById('workshop-mode').style.display = 'flex';
+            document.getElementById('terminal-mode').style.display = 'none';
+            document.getElementById('workshop-controls').style.display = 'flex';
+            document.getElementById('btn-workshop').classList.add('active');
+            document.getElementById('btn-terminal').classList.remove('active');
+            runCode();
+        } else {
+            document.getElementById('workshop-mode').style.display = 'none';
+            document.getElementById('terminal-mode').style.display = 'flex';
+            document.getElementById('workshop-controls').style.display = 'none';
+            document.getElementById('btn-workshop').classList.remove('active');
+            document.getElementById('btn-terminal').classList.add('active');
+            document.getElementById('term-input').focus();
+        }
+    }
+
+    // ================= МАСТЕРСКАЯ =================
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('textarea').forEach(ta => ta.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('editor-' + tabId).style.display = 'block';
+        btn.classList.add('active');
+    }
+
+    function runCode() {
+        const html = document.getElementById('editor-html').value;
+        const css = document.getElementById('editor-css').value;
+        const js = document.getElementById('editor-js').value;
+        const iframe = document.getElementById('preview-frame');
+
+        const fullCode = `
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"><style>${css}</style></head>
+            <body>${html}<script>${js}<\/script></body>
+            </html>
+        `;
+        const blob = new Blob([fullCode], {type: 'text/html'});
+        iframe.src = URL.createObjectURL(blob);
+        updateStatus("ВЫПОЛНЕНО", "var(--accent-green)");
+    }
+
+    function downloadCode() {
+        const html = document.getElementById('editor-html').value;
+        const css = document.getElementById('editor-css').value;
+        const js = document.getElementById('editor-js').value;
+        const fullCode = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
+        const blob = new Blob([fullCode], {type: 'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'my_project.html'; 
+        a.click();
+        URL.revokeObjectURL(url);
+        updateStatus("ФАЙЛ СКАЧАН", "var(--accent-green)");
+    }
+
+    function checkSyntax() {
+        const html = document.getElementById('editor-html').value;
+        const js = document.getElementById('editor-js').value;
+        const consoleEl = document.getElementById('console-log');
+        
+        consoleEl.style.display = 'block';
+        consoleEl.innerHTML = ''; 
+        let errorsFound = false;
+
+        const openTags = html.match(/<([a-z][a-z0-9]*)\b[^>]*>/gi) || [];
+        const closeTags = html.match(/<\/([a-z][a-z0-9]*)>/gi) || [];
+        
+        openTags.forEach(open => {
+            const tagName = open.match(/<([a-z][a-z0-9]*)/i)[1].toLowerCase();
+            if (['img', 'br', 'hr', 'input', 'meta', 'link'].includes(tagName)) return;
+            const isClosed = closeTags.some(close => close.toLowerCase().includes(`</${tagName}>`));
+            if (!isClosed && !open.endsWith('/>')) {
+                consoleEl.innerHTML += `<div class="error-msg">HTML: Тег <${tagName}> не закрыт.</div>`;
+                errorsFound = true;
+            }
+        });
+
+        if (!errorsFound) {
+            consoleEl.innerHTML += `<div style="color: var(--accent-green);">✅ СИНТАКСИС ВЕРЕН. Ошибок не найдено.</div>`;
+            updateStatus("ОШИБОК НЕТ", "var(--accent-green)");
+        } else {
+            updateStatus("ЕСТЬ ОШИБКИ", "var(--accent-red)");
+        }
+    }
+
+    // ================= УМНЫЙ ТЕРМИНАЛ =================
+    const termInput = document.getElementById('term-input');
+    const termOutput = document.getElementById('term-output');
+
+    termInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            let code = termInput.value;
+            termInput.value = ''; 
+            
+            termOutput.innerHTML += `<div class="term-line term-prompt">> ${code}</div>`;
+
+            // Умная замена print на console.log
+            code = code.replace(/^print\s*\(/g, 'console.log(');
+
+            try {
+                let output = "";
+                const originalLog = console.log;
+                console.log = (...args) => { output += args.join(" ") + "\n"; };
+
+                let result = eval(code);
+                console.log = originalLog;
+
+                if (output) {
+                    termOutput.innerHTML += `<div class="term-line">${output}</div>`;
+                }
+                if (result !== undefined && result !== null) {
+                    termOutput.innerHTML += `<div class="term-line">${result}</div>`;
+                }
+
+            } catch (error) {
+                let errorMsg = error.message;
+                if (errorMsg.includes("is not defined")) {
+                    let varName = errorMsg.split(' ')[0];
+                    termOutput.innerHTML += `<div class="term-line error-msg">ОШИБКА: Переменная "${varName}" не найдена. Попробуйте: print("${varName}")</div>`;
+                } else {
+                    termOutput.innerHTML += `<div class="term-line error-msg">ОШИБКА: ${errorMsg}</div>`;
+                }
+            }
+            termOutput.scrollTop = termOutput.scrollHeight;
+        }
+    });
+
+    function updateStatus(text, color) {
+        const statusEl = document.getElementById('status-text');
+        if (statusEl) {
+            statusEl.innerText = text;
+            statusEl.style.color = color;
+        }
+    }
+
+    window.onload = () => { runCode(); termInput.focus(); };
+</script>
+</body>
+</html>
