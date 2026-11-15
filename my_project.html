@@ -1,0 +1,937 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><style></style></head><body><!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FHS Scanner (Pro Max)</title>
+
+<!-- PWA МЕТА-ТЕГИ -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3389/3389070.png">
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3389/3389070.png">
+<link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;FHS Scanner&quot;,&quot;short_name&quot;:&quot;FHS&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#0a0e17&quot;,&quot;theme_color&quot;:&quot;#0a0e17&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;https://cdn-icons-png.flaticon.com/512/3389/3389070.png&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/png&quot;}]}">
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+    :root { 
+        --bg-main: #0a0e17; --bg-panel: #111827; --text-main: #e5e7eb; --text-muted: #6b7280; 
+        --accent-green: #10b981; --accent-red: #ef4444; --accent-yellow: #f59e0b; --border-color: #374151; 
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+        background-color: var(--bg-main); color: var(--text-main); font-family: 'Share Tech Mono', monospace; 
+        height: 100vh; overflow: hidden; display: flex; flex-direction: column; user-select: none; 
+    }
+    body.alarm { background-color: #450a0a; }
+
+    header { background: var(--bg-panel); border-bottom: 2px solid var(--border-color); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { color: var(--accent-green); font-size: 18px; text-transform: uppercase; }
+    .time-box { text-align: right; }
+    .live-clock { font-size: 16px; color: var(--accent-green); font-weight: bold; }
+    .timer-box { font-size: 12px; color: var(--text-muted); }
+
+    #content { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 70px; }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .main-sensor { background: var(--bg-panel); border: 2px solid var(--border-color); padding: 15px; text-align: center; margin-bottom: 15px; }
+    .sensor-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; }
+    .sensor-value { font-size: 50px; color: var(--text-main); font-weight: bold; line-height: 1; }
+    .sensor-unit { font-size: 16px; color: var(--text-muted); }
+    .sensor-status { margin-top: 10px; font-size: 12px; padding: 5px; border: 1px solid var(--border-color); text-transform: uppercase; }
+    .status-ok { color: var(--accent-green); border-color: var(--accent-green); }
+    .status-warn { color: var(--accent-yellow); border-color: var(--accent-yellow); }
+
+    .sub-sensors { display: flex; gap: 10px; margin-bottom: 15px; }
+    .sub-sensor { flex: 1; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 10px; text-align: center; }
+    .sub-sensor .sensor-value { font-size: 24px; }
+    .sub-sensor .sensor-unit { font-size: 10px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .info-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 10px; text-align: center; }
+    .info-label { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
+    .info-value { font-size: 18px; font-weight: bold; color: var(--accent-green); }
+
+    .graph-container { background: #000; border: 1px solid var(--border-color); height: 70px; margin-bottom: 10px; width: 100%; }
+    canvas { display: block; width: 100%; height: 100%; }
+
+    .calib-btn { width: 100%; padding: 10px; background: #1e3a8a; color: white; border: 1px solid #3b82f6; margin-bottom: 15px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 14px; }
+    .calib-btn:active { background: #1e40af; }
+
+    .guard-panel { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+    .guard-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .guard-label { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #374151; transition: .4s; border-radius: 30px; border: 2px solid #4b5563; }
+    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 2px; background-color: #9ca3af; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent-red); border-color: #fca5a5; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+    input:checked + .slider:before { transform: translateX(29px); background-color: white; }
+    .guard-status-text { font-size: 12px; color: var(--accent-red); font-weight: bold; text-transform: uppercase; margin-left: 10px; }
+    
+    .threshold-row { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
+    .threshold-row input[type="range"] { flex: 1; accent-color: var(--accent-red); }
+    .threshold-value { color: var(--accent-yellow); font-weight: bold; min-width: 60px; text-align: right; }
+
+    .map-box { background: var(--bg-panel); border: 1px solid var(--border-color); height: 150px; margin-bottom: 10px; position: relative; }
+    .map-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+    .map-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: var(--accent-red); text-shadow: 0 0 8px red; }
+    
+    .action-btn { width: 100%; padding: 10px; background: #1f2937; color: var(--accent-green); border: 1px solid var(--border-color); margin-bottom: 10px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 14px; }
+    .action-btn:active { background: #374151; }
+
+    /* КОМПАС */
+    .compass-container { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; text-align: center; margin-bottom: 15px; }
+    .compass-dial {
+        width: 160px; height: 160px; border: 2px solid var(--border-color); border-radius: 50%;
+        position: relative; margin: 0 auto 10px auto;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    }
+    .compass-cardinal {
+        position: absolute; font-size: 14px; font-weight: bold; color: var(--text-muted);
+    }
+    .compass-cardinal.n { top: 5px; left: 50%; transform: translateX(-50%); color: var(--accent-red); }
+    .compass-cardinal.e { right: 5px; top: 50%; transform: translateY(-50%); }
+    .compass-cardinal.s { bottom: 5px; left: 50%; transform: translateX(-50%); }
+    .compass-cardinal.w { left: 5px; top: 50%; transform: translateY(-50%); }
+    .compass-needle-dial {
+        position: absolute; top: 50%; left: 50%; width: 4px; height: 70px;
+        background: linear-gradient(to bottom, var(--accent-red) 50%, #374151 50%);
+        transform-origin: center center;
+        transform: translate(-50%, -50%) rotate(0deg);
+        transition: transform 0.1s linear;
+        border-radius: 2px;
+    }
+    .compass-needle-dial::after {
+        content: ''; position: absolute; top: 50%; left: 50%;
+        width: 12px; height: 12px; background: white; border-radius: 50%;
+        transform: translate(-50%, -50%); box-shadow: 0 0 5px rgba(255,255,255,0.8);
+    }
+    .compass-degree { font-size: 20px; font-weight: bold; color: var(--accent-green); }
+
+    textarea.notes { width: 100%; height: 80px; background: #000; color: var(--accent-green); border: 1px solid var(--border-color); font-family: 'Share Tech Mono'; padding: 5px; margin-bottom: 10px; resize: none; }
+
+    .log-box { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 10px; height: 80px; overflow-y: auto; font-size: 11px; margin-bottom: 15px; }
+    .log-item { border-bottom: 1px solid var(--border-color); padding: 3px 0; color: var(--text-muted); }
+    .log-time { color: var(--accent-green); margin-right: 5px; }
+
+    .alarm-btn { width: 100%; padding: 15px; background: var(--accent-red); color: white; border: none; font-family: 'Share Tech Mono', monospace; font-size: 18px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; cursor: pointer; }
+    .alarm-btn:active { background: #b91c1c; }
+
+    /* ЧЕРНЫЙ ЭКРАН ЛОВУШКИ */
+    #blackout-screen {
+        display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: #000; z-index: 9999; align-items: center; justify-content: center;
+        flex-direction: column; gap: 15px; text-align: center; padding: 20px;
+        user-select: none; -webkit-user-select: none; touch-action: manipulation;
+    }
+    /* СЕКРЕТНАЯ КНОПКА В ПРАВОМ ВЕРХНЕМ УГЛУ */
+    #secret-disable {
+        position: absolute; top: 0; right: 0; width: 60px; height: 60px;
+        z-index: 10000; cursor: pointer;
+    }
+
+    nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-panel); border-top: 2px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
+    .nav-btn { background: none; border: none; color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 12px; text-transform: uppercase; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .nav-btn.active { color: var(--accent-green); text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+    .nav-btn span { font-size: 20px; }
+</style>
+</head>
+<body>
+
+    <div id="blackout-screen">
+        <div id="secret-disable" onclick="stopTrap(event)"></div>
+        <span style="color: var(--accent-red); font-size: 24px; font-weight: bold;">🚨 СИСТЕМА ЗАБЛОКИРОВАНА 🚨</span>
+        <span style="color: #666; font-size: 14px;">Устройство защищено от кражи.</span>
+        <span style="color: #666; font-size: 12px; margin-top: 20px;">Нажмите на экран 5 раз для разблокировки</span>
+        <div id="tap-counter" style="color: var(--accent-green); font-size: 30px; margin-top: 10px; font-weight: bold; transition: transform 0.1s;">0 / 5</div>
+    </div>
+
+    <header>
+        <div class="logo">FHS SCANNER</div>
+        <div class="time-box">
+            <div class="live-clock" id="live-clock">00:00:00</div>
+            <div class="timer-box" id="timer">Uptime: 00:00:00</div>
+        </div>
+    </header>
+
+    <div id="content">
+        <div id="tab-scanner" class="tab-content active">
+            <button class="calib-btn" onclick="calibrate()">⚙️ КАЛИБРОВАТЬ ДАТЧИК (ОБНУЛИТЬ)</button>
+
+            <div class="guard-panel">
+                <div class="guard-row">
+                    <span class="guard-label">Охрана (Тревога)</span>
+                    <div style="display: flex; align-items: center;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="guard-toggle" onchange="toggleGuard()">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="guard-status-text" id="guard-status-text">ВЫКЛ</span>
+                    </div>
+                </div>
+                <div class="threshold-row">
+                    <span>ПОРОГ:</span>
+                    <input type="range" id="guard-threshold" min="1.0" max="8.0" step="0.1" value="2.5" oninput="updateThreshold(this.value)">
+                    <span class="threshold-value" id="threshold-display">2.5 м/с²</span>
+                </div>
+
+                <div class="guard-row" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                    <span class="guard-label" style="color: var(--accent-red);">АВТО-СИРЕНА (Ловушка)</span>
+                    <div style="display: flex; align-items: center;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="trap-toggle" onchange="toggleTrap()">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="guard-status-text" id="trap-status-text">ВЫКЛ</span>
+                    </div>
+                </div>
+                
+                <div class="threshold-row" style="margin-top: 10px;">
+                    <span>ЧУВСТВИТЕЛЬНОСТЬ:</span>
+                    <input type="range" id="trap-sensitivity" min="0.5" max="5.0" step="0.1" value="2.0" oninput="updateTrapSensitivity(this.value)">
+                    <span class="threshold-value" id="trap-sensitivity-display">2.0 м/с²</span>
+                </div>
+                
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 5px; line-height: 1.2;">
+                    Включи и положи телефон. Если его возьмут — сирена и фонарик включатся САМИ. (Секретная кнопка отключения: правый верхний угол).
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="info-card"><div class="info-label">ШИРОТА (LAT)</div><div class="info-value" id="lat-value">--</div></div>
+                <div class="info-card"><div class="info-label">ДОЛГОТА (LON)</div><div class="info-value" id="lon-value">--</div></div>
+            </div>
+
+            <div class="main-sensor">
+                <div class="sensor-label">ВЫСОТА НАД УРОВНЕМ МОРЯ</div>
+                <div class="sensor-value" id="altitude-value">--</div>
+                <div class="sensor-unit">метров</div>
+                <div class="sensor-status status-warn" id="altitude-status">ОЖИДАНИЕ GPS...</div>
+            </div>
+
+            <div class="sub-sensors">
+                <div class="sub-sensor"><div class="sensor-label">СКОРОСТЬ</div><div class="sensor-value" id="speed-value">0.0</div><div class="sensor-unit">км/ч</div></div>
+                <div class="sub-sensor"><div class="sensor-label">УСКОРЕНИЕ</div><div class="sensor-value" id="accel-value">0.0</div><div class="sensor-unit">м/с²</div></div>
+            </div>
+
+            <div class="info-card" style="margin-bottom: 15px;">
+                <div class="info-label">ШУМ (МИКРОФОН)</div>
+                <div class="info-value" id="noise-value" style="color: var(--accent-yellow);">--</div>
+                <div class="sensor-unit">дБ</div>
+            </div>
+
+            <div class="info-label">СВЕЧНОЙ ГРАФИК УСКОРЕНИЯ</div>
+            <div class="graph-container" style="height: 90px;"><canvas id="candlestick-graph"></canvas></div>
+            
+            <div class="info-label">ГРАФИК СКОРОСТИ</div>
+            <div class="graph-container"><canvas id="speed-graph"></canvas></div>
+
+            <div class="info-label">СПЕКТРОМЕТР (ШУМ)</div>
+            <div class="graph-container"><canvas id="spectrum-graph"></canvas></div>
+        </div>
+
+        <div id="tab-tools" class="tab-content">
+            <button class="alarm-btn" onclick="toggleAlarm()">🚨 РУЧНАЯ ТРЕВОГА (SOS)</button>
+            <button class="action-btn" onclick="testAlarm()">🔊 ТЕСТ СИРЕНЫ И ВСПЫШКИ</button>
+
+            <div class="compass-container">
+                <div class="compass-dial">
+                    <div class="compass-cardinal n">С</div>
+                    <div class="compass-cardinal e">В</div>
+                    <div class="compass-cardinal s">Ю</div>
+                    <div class="compass-cardinal w">З</div>
+                    <div class="compass-needle-dial" id="compass-needle-dial"></div>
+                </div>
+                <div class="compass-degree" id="compass-degree">0°</div>
+                <div class="info-label">КОМПАС</div>
+            </div>
+
+            <div class="info-label">МИНИ-КАРТА</div>
+            <div class="map-box">
+                <img src="https://static-maps.yandex.ru/1.x/?ll=37.6173,55.7558&z=10&l=map&size=600,300" class="map-img" id="map-img">
+                <div class="map-pin">📍</div>
+            </div>
+            
+            <button class="action-btn" id="map-type-btn" onclick="toggleMapType()">🗺️ ВИД: СХЕМА</button>
+            <button class="action-btn" onclick="toggleWeather()">☁️ ПОКАЗАТЬ ПОГОДУ</button>
+            
+            <button class="action-btn" onclick="copyCoords()">📋 СКОПИРОВАТЬ КООРДИНАТЫ</button>
+            <button class="action-btn" onclick="shareLocation()">📤 ОТПРАВИТЬ ГЕОПОЗИЦИЮ</button>
+
+            <div class="info-label">ЗАМЕТКИ ИССЛЕДОВАТЕЛЯ</div>
+            <textarea class="notes" id="notes" placeholder="Введите наблюдения..."></textarea>
+            <button class="action-btn" onclick="saveNotes()">💾 СОХРАНИТЬ ЗАМЕТКИ</button>
+
+            <button class="action-btn" onclick="exportCSV()">📥 СКАЧАТЬ ДАННЫЕ (CSV)</button>
+            
+            <button class="action-btn" onclick="enableNotifications()">🔔 ВКЛЮЧИТЬ УВЕДОМЛЕНИЯ</button>
+
+            <div class="info-label">ЖУРНАЛ СОБЫТИЙ</div>
+            <div class="log-box" id="log-box"></div>
+            <button class="action-btn" onclick="clearLog()">🧹 ОЧИСТИТЬ ЖУРНАЛ</button>
+        </div>
+    </div>
+
+    <nav>
+        <button class="nav-btn active" onclick="switchTab('scanner', this)"><span>📟</span>СКАНЕР</button>
+        <button class="nav-btn" onclick="switchTab('tools', this)"><span>🛠</span>ИНСТРУМЕНТЫ</button>
+    </nav>
+
+<script>
+    let alarmActive = false;
+    let weatherOn = false;
+    let mapType = 'map';
+    let offsetAccel = 0;
+    let notificationsEnabled = false;
+    let audioContext, analyser, microphone, noiseDataArray;
+    
+    let guardActive = false;
+    let guardThreshold = 2.5;
+    let guardBaseline = null;
+    let guardCalibrating = false;
+    let guardSamples = [];
+    let guardLastTrigger = 0;
+    let alarmAudioCtx = null;
+    
+    let flashlightTrack = null;
+    let sirenOsc = null;
+    let sirenGain = null;
+    let sirenInterval = null;
+
+    let trapActive = false;
+    let trapBaseline = null;
+    let trapCalibrating = false;
+    let trapSamples = [];
+    let trapTriggered = false;
+    let tapCount = 0;
+    let trapSensitivity = 2.0;
+
+    let wakeLock = null;
+    let backgroundMoved = false;
+
+    let startTime = localStorage.getItem('fhs_start_time');
+    if (!startTime) { startTime = Date.now(); localStorage.setItem('fhs_start_time', startTime); }
+
+    let lastLat = 55.7558, lastLon = 37.6173;
+    let dataLog = [];
+
+    window.onload = function() {
+        document.getElementById('notes').value = localStorage.getItem('fhs_notes') || '';
+        
+        const savedLog = localStorage.getItem('fhs_log_data');
+        if (savedLog) {
+            dataLog = JSON.parse(savedLog);
+            const box = document.getElementById('log-box');
+            dataLog.slice().reverse().forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'log-item';
+                div.innerHTML = `<span class="log-time">[${item.time}]</span> ${item.event}`;
+                box.prepend(div);
+            });
+        } else {
+            logEvent("Станция запущена");
+        }
+
+        initSensors();
+        initMicrophone();
+        setInterval(updateTimer, 1000);
+        setInterval(updateClock, 1000);
+        setInterval(drawGraphs, 100);
+        updateClock();
+
+        const blackout = document.getElementById('blackout-screen');
+        
+        const handleTap = (e) => {
+            if (e.cancelable) e.preventDefault();
+            if (!trapTriggered) return;
+            
+            tapCount++;
+            const counterEl = document.getElementById('tap-counter');
+            counterEl.innerText = `${tapCount} / 5`;
+            counterEl.style.transform = 'scale(1.3)';
+            setTimeout(() => counterEl.style.transform = 'scale(1)', 100);
+
+            try {
+                if (alarmAudioCtx) {
+                    const osc = alarmAudioCtx.createOscillator();
+                    const gain = alarmAudioCtx.createGain();
+                    osc.frequency.value = 1500;
+                    gain.gain.setValueAtTime(0.1, alarmAudioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, alarmAudioCtx.currentTime + 0.1);
+                    osc.connect(gain);
+                    gain.connect(alarmAudioCtx.destination);
+                    osc.start();
+                    osc.stop(alarmAudioCtx.currentTime + 0.1);
+                }
+            } catch(err) {}
+
+            if (tapCount >= 5) stopTrap();
+        };
+
+        blackout.addEventListener('pointerdown', handleTap);
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                if (trapActive && !trapTriggered) {
+                    logEvent("Приложение свернуто. Ловушка в режиме ожидания...");
+                }
+            } else if (document.visibilityState === 'visible') {
+                if (backgroundMoved && trapActive && !trapTriggered) {
+                    logEvent("🚨 Вас двигали в фоне! Тревога!");
+                    triggerTrap();
+                    backgroundMoved = false;
+                }
+                if (trapActive) requestWakeLock();
+            }
+        });
+    };
+
+    async function requestWakeLock() {
+        try {
+            if (wakeLock) return;
+            wakeLock = await navigator.wakeLock.request('screen');
+            logEvent("🔒 Экран заблокирован от сна");
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+        } catch (err) { console.warn("Wake Lock не поддерживается:", err); }
+    }
+
+    function releaseWakeLock() {
+        if (wakeLock) { wakeLock.release().then(() => { wakeLock = null; }); }
+    }
+
+    function stopTrap(e) {
+        if (e) e.stopPropagation();
+        
+        trapTriggered = false;
+        trapActive = false;
+        tapCount = 0;
+        
+        document.getElementById('trap-toggle').checked = false;
+        document.getElementById('trap-status-text').innerText = "ВЫКЛ";
+        document.getElementById('trap-status-text').style.color = "var(--text-muted)";
+        document.getElementById('blackout-screen').style.display = 'none';
+        
+        stopAlarmSound();
+        toggleFlashlight(false);
+        releaseWakeLock();
+        logEvent("Ловушка разблокирована (Секретная кнопка или 5 нажатий)");
+    }
+
+    function updateTrapSensitivity(value) {
+        trapSensitivity = parseFloat(value);
+        document.getElementById('trap-sensitivity-display').innerText = trapSensitivity.toFixed(1) + ' м/с²';
+    }
+
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    }
+
+    function logEvent(text) {
+        const box = document.getElementById('log-box');
+        const time = new Date().toLocaleTimeString();
+        const div = document.createElement('div');
+        div.className = 'log-item';
+        div.innerHTML = `<span class="log-time">[${time}]</span> ${text}`;
+        box.prepend(div);
+        dataLog.push({ time: time, event: text, lat: lastLat, lon: lastLon });
+        
+        if (dataLog.length > 50) dataLog.shift();
+        localStorage.setItem('fhs_log_data', JSON.stringify(dataLog));
+    }
+
+    function updateTimer() {
+        const diff = Math.floor((Date.now() - startTime) / 1000);
+        const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+        const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+        const s = String(diff % 60).padStart(2, '0');
+        document.getElementById('timer').innerText = `Uptime: ${h}:${m}:${s}`;
+    }
+
+    function calibrate() {
+        let currentAccel = parseFloat(document.getElementById('accel-value').innerText) || 0;
+        offsetAccel = currentAccel;
+        logEvent(`Калибровка: смещение ${offsetAccel.toFixed(2)} м/с²`);
+        alert("Датчик откалиброван! Теперь 0.0 — это текущее положение.");
+    }
+
+    function playAlarmSound() {
+        try {
+            if (!alarmAudioCtx) {
+                alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (alarmAudioCtx.state === 'suspended') alarmAudioCtx.resume();
+            
+            stopAlarmSound();
+
+            sirenOsc = alarmAudioCtx.createOscillator();
+            sirenGain = alarmAudioCtx.createGain();
+            
+            sirenOsc.type = 'sawtooth'; 
+            sirenOsc.frequency.setValueAtTime(600, alarmAudioCtx.currentTime);
+            sirenOsc.frequency.linearRampToValueAtTime(1200, alarmAudioCtx.currentTime + 0.5);
+            sirenOsc.frequency.linearRampToValueAtTime(600, alarmAudioCtx.currentTime + 1.0);
+            
+            if (sirenInterval) clearInterval(sirenInterval);
+            sirenInterval = setInterval(() => {
+                if (sirenOsc && alarmAudioCtx.state === 'running') {
+                    sirenOsc.frequency.linearRampToValueAtTime(1200, alarmAudioCtx.currentTime + 0.5);
+                    sirenOsc.frequency.linearRampToValueAtTime(600, alarmAudioCtx.currentTime + 1.0);
+                }
+            }, 1000);
+
+            sirenGain.gain.setValueAtTime(0.3, alarmAudioCtx.currentTime);
+            sirenOsc.connect(sirenGain);
+            sirenGain.connect(alarmAudioCtx.destination);
+            sirenOsc.start();
+        } catch (e) { console.warn('Звук недоступен:', e); }
+    }
+
+    function stopAlarmSound() {
+        if (sirenOsc) { try { sirenOsc.stop(); } catch(e) {} sirenOsc = null; }
+        if (sirenGain) { try { sirenGain.disconnect(); } catch(e) {} sirenGain = null; }
+        if (sirenInterval) { clearInterval(sirenInterval); sirenInterval = null; }
+    }
+
+    async function toggleFlashlight(on) {
+        try {
+            if (on) {
+                if (!flashlightTrack) {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    flashlightTrack = stream.getVideoTracks()[0];
+                }
+                await flashlightTrack.applyConstraints({ advanced: [{ torch: true }] });
+                logEvent("🔦 Вспышка включена");
+            } else {
+                if (flashlightTrack) {
+                    await flashlightTrack.applyConstraints({ advanced: [{ torch: false }] });
+                    flashlightTrack.stop();
+                    flashlightTrack = null;
+                    logEvent("🔦 Вспышка выключена");
+                }
+            }
+        } catch (e) {
+            console.warn("Фонарик не поддерживается:", e);
+            logEvent("⚠️ Ошибка вспышки");
+        }
+    }
+
+    function toggleAlarm() {
+        alarmActive = !alarmActive;
+        document.body.classList.toggle('alarm', alarmActive);
+        
+        if (alarmActive) {
+            logEvent("ВКЛЮЧЕНА ТРЕВОГА (SOS)");
+            sendNotification("ВКЛЮЧЕНА ТРЕВОГА (SOS)");
+            playAlarmSound();
+            vibrate([200, 100, 200, 100, 200]);
+            toggleFlashlight(true);
+            
+            let mapUrl = `https://yandex.ru/maps/?pt=${lastLon},${lastLat}&z=15&l=map`;
+            navigator.clipboard.writeText(`SOS! Мои координаты: ${mapUrl}`).then(() => {
+                logEvent("Координаты SOS скопированы в буфер");
+            }).catch(() => {});
+            
+        } else {
+            logEvent("Тревога отключена");
+            stopAlarmSound();
+            toggleFlashlight(false);
+        }
+    }
+
+    function testAlarm() {
+        if (alarmActive) {
+            toggleAlarm();
+        } else {
+            toggleAlarm();
+            setTimeout(() => { if(alarmActive) toggleAlarm(); }, 3000);
+        }
+    }
+
+    function vibrate(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
+
+    function updateThreshold(value) {
+        guardThreshold = parseFloat(value);
+        document.getElementById('threshold-display').innerText = guardThreshold.toFixed(1) + ' м/с²';
+    }
+
+    function toggleGuard() {
+        guardActive = document.getElementById('guard-toggle').checked;
+        const statusText = document.getElementById('guard-status-text');
+
+        if (guardActive) {
+            guardBaseline = null;
+            guardSamples = [];
+            guardCalibrating = true;
+            guardLastTrigger = 0;
+            statusText.innerText = "КАЛИБРОВКА...";
+            statusText.style.color = "var(--accent-yellow)";
+            logEvent("ОХРАНА: замер покоя (2 сек)...");
+
+            try {
+                if (!alarmAudioCtx) alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (alarmAudioCtx.state === 'suspended') alarmAudioCtx.resume();
+            } catch (e) {}
+
+            setTimeout(() => {
+                if (!guardActive) return;
+                if (guardSamples.length > 0) {
+                    guardBaseline = guardSamples.reduce((a, b) => a + b, 0) / guardSamples.length;
+                } else {
+                    guardBaseline = 9.8;
+                }
+                guardCalibrating = false;
+                statusText.innerText = "ВКЛ";
+                statusText.style.color = "var(--accent-green)";
+                logEvent(`ОХРАНА АКТИВНА (база: ${guardBaseline.toFixed(2)} м/с²)`);
+                vibrate([80, 40, 80]);
+            }, 2000);
+        } else {
+            guardCalibrating = false;
+            guardBaseline = null;
+            statusText.innerText = "ВЫКЛ";
+            statusText.style.color = "var(--text-muted)";
+            logEvent("Охрана выключена");
+        }
+    }
+
+    function triggerGuard(delta) {
+        guardLastTrigger = Date.now();
+        vibrate([300, 100, 300, 100, 300]);
+        playAlarmSound();
+        toggleFlashlight(true);
+        sendNotification("🚨 ТРЕВОГА! Телефон сдвинут!");
+        logEvent(`🚨 ОХРАНА: движение Δ=${delta.toFixed(2)} м/с²`);
+        document.body.classList.add('alarm');
+        
+        setTimeout(() => {
+            document.body.classList.remove('alarm');
+            toggleFlashlight(false);
+            stopAlarmSound();
+        }, 3000);
+
+        guardActive = false;
+        document.getElementById('guard-toggle').checked = false;
+        document.getElementById('guard-status-text').innerText = "ВЫКЛ";
+        document.getElementById('guard-status-text').style.color = "var(--text-muted)";
+    }
+
+    function toggleTrap() {
+        trapActive = document.getElementById('trap-toggle').checked;
+        const statusText = document.getElementById('trap-status-text');
+
+        if (trapActive) {
+            trapBaseline = null;
+            trapSamples = [];
+            trapCalibrating = true;
+            trapTriggered = false;
+            tapCount = 0;
+            backgroundMoved = false;
+            statusText.innerText = "КАЛИБРОВКА...";
+            statusText.style.color = "var(--accent-yellow)";
+            logEvent("АВТО-СИРЕНА: замер покоя (2 сек)...");
+            
+            requestWakeLock();
+
+            setTimeout(() => {
+                if (!trapActive) return;
+                trapBaseline = trapSamples.length > 0 ? trapSamples.reduce((a, b) => a + b, 0) / trapSamples.length : 9.8;
+                trapCalibrating = false;
+                statusText.innerText = "ВКЛ";
+                statusText.style.color = "var(--accent-green)";
+                logEvent("АВТО-СИРЕНА АКТИВНА. Телефон под охраной.");
+            }, 2000);
+        } else {
+            stopTrap();
+        }
+    }
+
+    function triggerTrap() {
+        trapTriggered = true;
+        const blackoutScreen = document.getElementById('blackout-screen');
+        
+        blackoutScreen.style.display = 'flex';
+        tapCount = 0;
+        document.getElementById('tap-counter').innerText = '0 / 5';
+        
+        playAlarmSound();
+        toggleFlashlight(true);
+        vibrate([1000, 200, 1000, 200, 1000, 200, 1000]);
+        
+        logEvent("🕵️ АВТО-СИРЕНА: Телефон схвачен! Блокировка и сирена.");
+    }
+
+    function copyCoords() {
+        let text = `Широта: ${lastLat.toFixed(6)}, Долгота: ${lastLon.toFixed(6)}`;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Координаты скопированы!");
+            logEvent("Координаты скопированы");
+        }).catch(() => alert("Не удалось скопировать"));
+    }
+
+    function shareLocation() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'FHS Scanner',
+                text: `Мои координаты: ${lastLat.toFixed(6)}, ${lastLon.toFixed(6)}`,
+                url: `https://yandex.ru/maps/?pt=${lastLon},${lastLat}&z=15&l=map`
+            }).catch(() => {});
+        } else { copyCoords(); }
+    }
+
+    function clearLog() {
+        if (confirm("Очистить журнал событий?")) {
+            document.getElementById('log-box').innerHTML = '';
+            dataLog = [];
+            localStorage.removeItem('fhs_log_data');
+            logEvent("Журнал очищен");
+        }
+    }
+
+    function enableNotifications() {
+        if (!("Notification" in window)) { alert("Этот браузер не поддерживает уведомления"); return; }
+        Notification.requestPermission().then(function(permission) {
+            if (permission === "granted") {
+                notificationsEnabled = true;
+                alert("Уведомления включены!");
+                logEvent("Уведомления включены");
+            } else { alert("Уведомления запрещены"); }
+        });
+    }
+
+    function sendNotification(text) {
+        if (notificationsEnabled && Notification.permission === "granted") {
+            new Notification("FHS Scanner", { body: text, icon: "https://cdn-icons-png.flaticon.com/512/3389/3389070.png" });
+        }
+    }
+
+    function toggleMapType() {
+        mapType = (mapType === 'map') ? 'sat' : 'map';
+        let btn = document.getElementById('map-type-btn');
+        btn.innerText = mapType === 'map' ? '🗺️ ВИД: СХЕМА' : '🛰️ ВИД: СПУТНИК';
+        updateMap(lastLat, lastLon);
+        logEvent(mapType === 'map' ? "Карта: Схема" : "Карта: Спутник");
+    }
+
+    function toggleWeather() {
+        weatherOn = !weatherOn;
+        updateMap(lastLat, lastLon);
+        logEvent(weatherOn ? "Включен слой погоды" : "Слой погоды выключен");
+    }
+
+    function updateMap(lat, lon) {
+        let layer = mapType === 'sat' ? 'sat' : 'map';
+        if (weatherOn && mapType === 'map') layer = 'map,trf';
+        document.getElementById('map-img').src = `https://static-maps.yandex.ru/1.x/?ll=${lon},${lat}&z=12&l=${layer}&size=600,300&pt=${lon},${lat},pm2rdm`;
+    }
+
+    function saveNotes() {
+        const notes = document.getElementById('notes').value;
+        localStorage.setItem('fhs_notes', notes);
+        alert("Заметки сохранены!");
+        logEvent("Заметки обновлены");
+    }
+
+    function exportCSV() {
+        let csv = "Time,Event,Latitude,Longitude\n";
+        dataLog.forEach(row => { csv += `${row.time},"${row.event}",${row.lat},${row.lon}\n`; });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'fhs_log.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function initMicrophone() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    microphone = audioContext.createMediaStreamSource(stream);
+                    microphone.connect(analyser);
+                    analyser.fftSize = 256;
+                    noiseDataArray = new Uint8Array(analyser.frequencyBinCount);
+                    setInterval(updateNoise, 250);
+                } catch(e) { document.getElementById('noise-value').innerText = "ОШИБКА"; }
+            }).catch(function(err) { document.getElementById('noise-value').innerText = "НЕТ ДОСТУПА"; });
+        } else { document.getElementById('noise-value').innerText = "НЕ ПОДДЕРЖИВАЕТСЯ"; }
+    }
+
+    function updateNoise() {
+        if (!analyser || !noiseDataArray) return;
+        try {
+            analyser.getByteFrequencyData(noiseDataArray);
+            let sum = 0;
+            for (let i = 0; i < noiseDataArray.length; i++) sum += noiseDataArray[i];
+            let db = Math.round((sum / noiseDataArray.length) + 30);
+            const noiseEl = document.getElementById('noise-value');
+            if (noiseEl) noiseEl.innerText = db;
+        } catch(e) {}
+    }
+
+    function initSensors() {
+        window.addEventListener('deviceorientation', function(event) {
+            if (event.alpha !== null) {
+                let heading = Math.round(event.alpha);
+                document.getElementById('compass-degree').innerText = heading + "°";
+                
+                const needle = document.getElementById('compass-needle-dial');
+                if (needle) needle.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
+            }
+        });
+
+        window.addEventListener('devicemotion', function(event) {
+            const acc = event.accelerationIncludingGravity;
+            if (!acc || typeof acc.x !== 'number' || typeof acc.y !== 'number' || typeof acc.z !== 'number') return;
+
+            const total = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
+            let calibrated = total - offsetAccel;
+            document.getElementById('accel-value').innerText = calibrated.toFixed(2);
+
+            if (document.visibilityState === 'hidden' && trapActive) {
+                if (trapBaseline !== null) {
+                    const bgDelta = Math.abs(total - trapBaseline);
+                    if (bgDelta > trapSensitivity) backgroundMoved = true;
+                }
+                return;
+            }
+
+            if (trapActive) {
+                if (trapCalibrating) {
+                    trapSamples.push(total);
+                } else if (trapBaseline !== null && !trapTriggered) {
+                    const trapDelta = Math.abs(total - trapBaseline);
+                    if (trapDelta > trapSensitivity) { 
+                        triggerTrap(); 
+                    }
+                }
+            }
+
+            if (guardActive) {
+                if (guardCalibrating) {
+                    guardSamples.push(total);
+                } else if (guardBaseline !== null) {
+                    const delta = Math.abs(total - guardBaseline);
+                    const now = Date.now();
+                    if (delta > guardThreshold && now - guardLastTrigger > 5000) {
+                        triggerGuard(delta);
+                    }
+                }
+            }
+
+            if (calibrated > 15 && !alarmActive) {
+                sendNotification("Обнаружено резкое движение! Ускорение > 15 м/с²");
+            }
+        });
+
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(function(position) {
+                if (position.coords.altitude !== null) {
+                    document.getElementById('altitude-value').innerText = Math.round(position.coords.altitude);
+                    document.getElementById('altitude-status').innerText = 'GPS АКТИВЕН';
+                    document.getElementById('altitude-status').className = 'sensor-status status-ok';
+                }
+                let speed = position.coords.speed || 0;
+                document.getElementById('speed-value').innerText = (speed * 3.6).toFixed(1);
+                
+                lastLat = position.coords.latitude;
+                lastLon = position.coords.longitude;
+                
+                document.getElementById('lat-value').innerText = lastLat.toFixed(4);
+                document.getElementById('lon-value').innerText = lastLon.toFixed(4);
+                
+                updateMap(lastLat, lastLon);
+            }, function(error) {
+                document.getElementById('altitude-status').innerText = 'НЕТ ДОСТУПА К GPS';
+            }, { enableHighAccuracy: true });
+        }
+    }
+
+    let candleData = [];
+    let speedData = new Array(50).fill(0);
+
+    function drawCandlestick() {
+        const canvas = document.getElementById('candlestick-graph');
+        if (!canvas || !canvas.offsetWidth) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth; 
+        canvas.height = canvas.offsetHeight;
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        let accel = parseFloat(document.getElementById('accel-value').innerText) || 0;
+        candleData.push(accel);
+        if (candleData.length > 20) candleData.shift();
+        
+        const candleWidth = canvas.width / 20;
+        for (let i = 0; i < candleData.length; i++) {
+            let value = candleData[i];
+            let x = i * candleWidth;
+            let height = Math.min((value / 30) * canvas.height, canvas.height);
+            let prevValue = i > 0 ? candleData[i-1] : value;
+            ctx.fillStyle = (value >= prevValue) ? '#10b981' : '#ef4444';
+            ctx.fillRect(x + 2, canvas.height - height, candleWidth - 4, height);
+        }
+    }
+
+    function drawSpeedGraph() {
+        const canvas = document.getElementById('speed-graph');
+        if (!canvas || !canvas.offsetWidth) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth; 
+        canvas.height = canvas.offsetHeight;
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i < speedData.length; i++) {
+            const x = (i / speedData.length) * canvas.width;
+            let y = canvas.height - (speedData[i] / 100) * canvas.height;
+            y = Math.max(0, Math.min(y, canvas.height)); 
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    function drawSpectrum() {
+        const canvas = document.getElementById('spectrum-graph');
+        if (!canvas || !canvas.offsetWidth) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth; 
+        canvas.height = canvas.offsetHeight;
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        if (!analyser || !noiseDataArray) return;
+        try {
+            analyser.getByteFrequencyData(noiseDataArray);
+            const barWidth = canvas.width / noiseDataArray.length;
+            for (let i = 0; i < noiseDataArray.length; i++) {
+                let height = (noiseDataArray[i] / 255) * canvas.height;
+                let x = i * barWidth;
+                let hue = 240 - (i / noiseDataArray.length) * 240;
+                ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                ctx.fillRect(x, canvas.height - height, barWidth - 1, height);
+            }
+        } catch(e) {}
+    }
+
+    function drawGraphs() {
+        let speed = parseFloat(document.getElementById('speed-value').innerText) || 0;
+        speedData.push(speed); speedData.shift();
+        drawCandlestick();
+        drawSpeedGraph();
+        drawSpectrum();
+    }
+</script>
+</body>
+</html><script></script></body></html>
